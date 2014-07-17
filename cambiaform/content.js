@@ -57,15 +57,22 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse)
      	    });
      	    var botonSi = $("<button>");
      	    botonSi.html("Si");
+     	    botonSi.button();
      	    var botonNo = $("<button>");
      	    botonNo.html("No");
-     	    var pregunta = $("<p>");
+     	    botonNo.button();
+     	    botonNo.click(function(){
+     	      barra.slideToggle("slow");
+     	    });
+     	    var pregunta = $("<span>");
      	    pregunta.html("¿Quieres guardar esta pagina?");
      	    pregunta.appendTo(barra);
+     	    pregunta.css("margin-right","0.5em");
      	    botonSi.appendTo(barra);
      	    botonNo.appendTo(barra);
+     	    barra.hide();
      	    $("body").prepend(barra);
-     	    barra.show();
+     	    barra.slideToggle("slow");
      	    console.log("Ha salido");
      	  }
      	}  	

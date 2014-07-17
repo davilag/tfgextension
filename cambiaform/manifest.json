@@ -14,7 +14,7 @@
     "persistent": false
   },
   "permissions": [
-    "privacy","declarativeContent", "tabs","activeTab","http://*/*", "https://*/*","chrome-extension://*"
+    "privacy","declarativeContent", "tabs","activeTab","http://*/*", "https://*/*"
   ],
   "content_scripts": [
         {
@@ -23,5 +23,8 @@
             "css": ["jquery-ui/jquery-ui.css"],
             "all_frames": true
         }
-    ]
+    ],
+    "web_accessible_resources": [
+      "jquery-ui/images/*.png"
+  ]
 }
