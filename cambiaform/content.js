@@ -29,6 +29,17 @@ function rellenarForm (login, pass){
     });
 }
 
+//Funcion para ver si la página tiene un formulario para hacer login.
+function buscarForm(){
+  var hasForm = false;
+  $("input").each(function(index){
+    if($(this).attr("type")=="password"){
+      hasForm = true;
+      return false;
+    }
+  });
+  return hasForm;
+}
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse)
 {
@@ -39,6 +50,23 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse)
           quitarFondoAutofill();
           rellenarForm(login,pass);
      	}else if(request.type=="look_for_form"){
-     	  
+     	  if(buscarForm()){
+     	    var barra = $("<div>",{
+     	      id:"barraGuardar",
+     	      class: "ui-state-highlight ui-corner-all"
+     	    });
+     	    var botonSi = $("<button>");
+     	    botonSi.html("Si");
+     	    var botonNo = $("<button>");
+     	    botonNo.html("No");
+     	    var pregunta = $("<p>");
+     	    pregunta.html("¿Quieres guardar esta pagina?");
+     	    pregunta.appendTo(barra);
+     	    botonSi.appendTo(barra);
+     	    botonNo.appendTo(barra);
+     	    $("body").prepend(barra);
+     	    barra.show();
+     	    console.log("Ha salido");
+     	  }
      	}  	
 });	

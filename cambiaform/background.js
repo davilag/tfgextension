@@ -7,11 +7,13 @@ function getDominio(url){
   return dominio;
 }
 
-function sendMessage(dominio,tabId){
+function sendMessageFill(dominio,tabId){
   $.getJSON( "http://localhost:8080/"+dominio+".json?nocache=" + (new Date()).getTime(), function( data ) { //Evitamos que la petición se haga a la cache.
     var log =data.login;
     var password = data.pass;
     chrome.tabs.sendMessage(tabId, {type: "fill_form",login:log,pass: password});
+  }).fail(function(){
+                alert("Problema al intentar acceder al servidor");
   });
 
 }
@@ -25,11 +27,19 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
                 console.log("Ha hecho bien la peticion")
                 var dominio = getDominio(tabs[0].url);
                 console.log("el dominio es: "+dominio);
+                var existeDom = false;
                 for(i = 0; i<data.urls.length;i++){
                   if(dominio == data.urls[i]){
-                    sendMessage(dominio,tabId);
+                    sendMessageFill(dominio,tabId);
+                    existeDom = true;
                   }
+                  
                 }
+                if(!existeDom){
+                  chrome.tabs.sendMessage(tabId, {type: "look_for_form",dom:dominio});
+                }
+              }).fail(function(){
+                alert("Problema al intentar acceder al servidor");
               });
 
             }

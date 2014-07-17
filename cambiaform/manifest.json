@@ -14,12 +14,13 @@
     "persistent": false
   },
   "permissions": [
-    "privacy","declarativeContent", "tabs","activeTab","http://*/*", "https://*/*"
+    "privacy","declarativeContent", "tabs","activeTab","http://*/*", "https://*/*","chrome-extension://*"
   ],
   "content_scripts": [
         {
             "matches": ["<all_urls>"],
-            "js": ["content.js","jquery-1.10.2.js"],
+            "js": ["content.js","jquery-ui/external/jquery/jquery.js",  "jquery-ui/jquery-ui.min.js"],
+            "css": ["jquery-ui/jquery-ui.css"],
             "all_frames": true
         }
     ]
