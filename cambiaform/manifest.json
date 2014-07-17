@@ -10,11 +10,11 @@
     "default_popup": "popup.html"
   },
   "background": {
-    "scripts": ["background.js"],
+    "scripts": ["background.js","jquery-1.10.2.js"],
     "persistent": false
   },
   "permissions": [
-    "privacy","declarativeContent", "tabs","activeTab","http://*/*", "https://*/*","localhost:*/*"
+    "privacy","declarativeContent", "tabs","activeTab","http://*/*", "https://*/*"
   ],
   "content_scripts": [
         {
