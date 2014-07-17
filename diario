@@ -16,4 +16,6 @@ Lo parámetros son:
 
 La limitación que tiene el script de background es que no puede acceder al arbol DOM de la página que se haya modificado(cargado) en cualquier pestaña. Para poder acceder al arbol DOM de cualquier página, la extensión tiene que definir un script content que se ejecutará como si fuera un script de la propia página web, con las restricciones que esto también conlleva ya que tampoco podría ponerse en contacto con nuestro servicio debido a las restricciones de seguridad de la sandbox de javascript.
 
+Con el conjunto del script de background y el script de content, podemos pedir desde el background tanto si el usuario tiene contraseña para esa página como si el usuario la tiene, coger del servidor el usuario y la contraseña. Una vez tenemos el usuario y la contraseña en el script de background, simplemente pasamos por un mensaje al script de contenidos el usuario y la contraseña.
+
   
