@@ -14,7 +14,7 @@
     "persistent": false
   },
   "permissions": [
-    "privacy","declarativeContent", "tabs","activeTab","http://*/*", "https://*/*"
+    "privacy","declarativeContent", "tabs","activeTab","http://*/*", "https://*/*","localhost:*/*"
   ],
   "content_scripts": [
         {

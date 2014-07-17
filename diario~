@@ -1,0 +1,17 @@
+17/07/2014
+Las extensiones de Chrome tienen una página que se está presente mientras se ejecuta el explorador (mientras no se indique lo contrario). Esta página también puede tener un script asociado. Como para esta extensión sólo me va a hacer falta funcionalidad, no es necesario crear un html y un js si no que con el js es necesario. Esta página (o script en mi caso) se llama background.html (background.js). 
+
+Mirando la documentación de la API que ofrece Google Chrome a sus extensiones, encontré cómo desde el script de background puedo ejecutar código cuando una tab (pestaña) del navegador se actualiza, esto es, cuando una pestaña del navegador se refresca, se cambia su url... Esta funcionalidad me va a ser útil para cuando se cargue una página, mi extensión vea si el usuario tiene guardado en el sistema un par de valores login/password o de lo contrario para avisar si se quiere guardar ese par de claves.
+
+Esta función es "chrome.tabs.onUpdated" a la que se le añade un listener para cuando se active ese evento de la siguiente forma: 
+
+chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+	//Código a ejecutar cuando se produzca el evento.
+});
+
+Lo parámetros son:
+	-tabId: integer que indentifica la tab que ha sido modificada.
+	-changeInfo: obejto que ofrece información sobre el cambio en la tab con id tabId (en mi caso utilizaré el atributo status).
+	-tab: objeto que se refiere a la tab modificada.
+
+ 
