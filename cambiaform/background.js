@@ -13,7 +13,7 @@ function sendMessageFill(dominio,tabId){
     var password = data.pass;
     chrome.tabs.sendMessage(tabId, {type: "fill_form",login:log,pass: password});
   }).fail(function(){
-                alert("Problema al intentar acceder al servidor");
+                console.log("Problema al intentar acceder al servidor");
   });
 
 }
@@ -39,7 +39,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
                   chrome.tabs.sendMessage(tabId, {type: "look_for_form",dom:dominio});
                 }
               }).fail(function(){
-                alert("Problema al intentar acceder al servidor");
+                console.log("Problema al intentar acceder al servidor");
               });
 
             }
@@ -51,8 +51,10 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 });
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
-    if (request.greeting == "finished"){
-      alert("Ha llegado algo de vuelta");
+    if (request.type == "save_user"){
+      alert(request.login);
+      alert(request.pass);
+      alert(request.dom);
       
     }
 });

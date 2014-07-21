@@ -7,5 +7,3 @@ el usuario y contraseña de cualquier página que visitemos rellenándolo.
 
 Conseguido: 
   ->Pedir usuario y contraseña a un servidor mediante peticiones de ficheros JSON dependiendo de la página que estemos visitando.
-  ->Mostar barra para preguntar si el usuario quiere guardar el usuario y la contraseña para esa página y mostar diálogo para enviar usuario y pass.
-
