@@ -1,22 +1,144 @@
-$(document).ready(function(){
-	var regid = "APA91bEGgIQJg_FKAkvUs_g2FnmDZS94UrA8snkexTGUe25GHVBHhD5rwphkhqUtOj69UBRHDwUEwAauYgyoCAamH_1969OTvYhidy1PLR_JwJjH_CVo9t0tDLvKIxFa-xV-1CwZD3XNoLQb7T1M63akz5aAVALqFxa4CoRkOc6KFMmvcUBDQrc";
+var messageId = 0;
+chrome.storage.local.get("messageId", function(result) {
+  if (chrome.runtime.lastError)
+    return;
+  messageId = parseInt(result["messageId"]);
+  if (isNaN(messageId))
+    messageId = 0;
+});
 
-	var auth = "key=AIzaSyB0XNmPC5IHXDc9aVX4rSDRZOD2w0UskVM";
-	$("#boton").click(function(){
-		$.ajax({
-            url: 'https://android.googleapis.com/gcm/send',
-            type: 'POST',
-            Authorization: auth,
-            'content-type' : 'application/json',
-            data: JSON.stringify({
-                "data":{
-                	"title":"Test title",
-                	"message":"Test Message"
-                },
-                "registration_ids":[regid]
-
-            })
+// Sets up an event listener for send error.
+//chrome.gcm.onSendError.addListener(sendError);
+function setRegistered(correo){
+    chrome.storage.local.get("regId",function(value){
+        $("#id").html(value.regId);
+        chrome.storage.local.set({'registered':true});
+        chrome.storage.local.set({'mail':correo});
+        $("#botonReg").attr("disabled",true);
+    });
+}
+// Returns a new ID to identify the message.
+function getMessageId() {
+  messageId++;
+  chrome.storage.local.set({messageId: messageId});
+  return messageId.toString();
+}
+function sendRegisterMessage(data,correo){
+        $.ajax({
+            type: "POST",
+            url: "http://localhost:8080/register",
+            processData: false,
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function(registrado) {
+                console.log("Ha llegado el mensaje");
+                console.log("Me ha llegado un: "+registrado);
+                if(registrado){
+                    setRegistered(correo);
+                }
+            }
         });
-        alert("json posted!");
-	});
+}
+
+function sendRequestMessage(correo,dominio){
+    chrome.storage.local.get("regId",function(value){
+        var data = {
+            data:{
+                "action": "request",
+                "mail": correo,
+                "dominio": dominio,
+                "reg_id": value.regId
+            }
+        };
+        console.log("correo: "  +correo);
+        console.log("dominio"+dominio);
+        console.log("regID:"+value.regId);
+        $.ajax({
+            type: "POST",
+            url: "http://localhost:8080/askforpass",
+            processData: false,
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            success: function(registrado) {
+                console.log("Ha enviado el mensaje de peticion.");
+            }
+        });
+    });
+}
+function regInServer(serverId){
+    console.log("Me voy a registrar en el servidor.");
+    var correo = $("#correo").val();
+    console.log("El correo es: "+correo);
+    chrome.storage.local.get("regId",function(value){
+        var data = {
+            data: {
+              "action": "REGISTER",
+              "role": "requester",
+              "mail": correo,
+              "reg_id": value.regId
+            }
+
+        };
+        sendRegisterMessage(data,correo);
+    });
+    /*
+    chrome.gcm.onMessage.addListener(function(message){
+        console.log("Ha llegado un mensaje de GCM en prueba");
+        console.log(message.data);
+        action = message.data.action;
+        console.log(action);
+        if(action=="registered"){
+            console.log("Registrado con exito");
+            chrome.storage.local.get("regId",function(value){
+                $("#id").html(value.regId);
+                chrome.storage.local.set({'registered':true});
+                chrome.storage.local.set({'mail':correo});
+                $("#botonReg").attr("disabled",true);
+            });
+        }
+    });
+    */
+}
+
+$(document).ready(function(){
+    var registrado = false;
+    var server = "";
+    chrome.storage.local.get("regId",function(value){
+        $("#id").html(value.regId);
+    });
+
+    chrome.storage.local.get("registered",function(value){
+        console.log(value);
+        if(value.registered){
+            registrado = true;
+            $("#botonReg").attr("disabled",true);
+        }
+    });
+
+    chrome.storage.local.get("serverId",function(value){
+        console.log(value);
+        server = value.serverId 
+    });
+    
+    /*
+    Funcion que se ejecuta cuando pulso el boton de registrar
+    */
+    $("#botonReg").click(function(){
+        chrome.storage.local.get("serverId",function(value){
+            console.log(value);
+            server = value.serverId;
+            regInServer(server);
+    });
+        
+    });
+
+    $("#botonDom").click(function(){
+        dominio = $("#dominio").val();
+        chrome.storage.local.get("mail",function(value){
+            correo = value.mail;
+            console.log("El correo es: "+correo);
+            
+            sendRequestMessage(correo,dominio);
+        });
+    });
 });
