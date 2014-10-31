@@ -9,7 +9,7 @@
 
 	"background":{
 		"scripts":["background.js","jquery-1.10.2.js"],
-		"persistent":false
+		"persistent":true
 	},
 	"permissions":[
 		"gcm","storage","http://*/*", "https://*/*"

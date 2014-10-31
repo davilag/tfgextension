@@ -1,4 +1,5 @@
 var messageId = 0;
+var serverIp = "192.168.1.41"
 chrome.storage.local.get("messageId", function(result) {
   if (chrome.runtime.lastError)
     return;
@@ -26,7 +27,7 @@ function getMessageId() {
 function sendRegisterMessage(data,correo){
         $.ajax({
             type: "POST",
-            url: "http://localhost:8080/register",
+            url: "http://"+serverIp+":8080/register",
             processData: false,
             contentType: 'application/json',
             data: JSON.stringify(data),
@@ -55,7 +56,7 @@ function sendRequestMessage(correo,dominio){
         console.log("regID:"+value.regId);
         $.ajax({
             type: "POST",
-            url: "http://localhost:8080/askforpass",
+            url: "http://"+serverIp+":8080/askforpass",
             processData: false,
             contentType: 'application/json',
             data: JSON.stringify(data),
@@ -81,23 +82,6 @@ function regInServer(serverId){
         };
         sendRegisterMessage(data,correo);
     });
-    /*
-    chrome.gcm.onMessage.addListener(function(message){
-        console.log("Ha llegado un mensaje de GCM en prueba");
-        console.log(message.data);
-        action = message.data.action;
-        console.log(action);
-        if(action=="registered"){
-            console.log("Registrado con exito");
-            chrome.storage.local.get("regId",function(value){
-                $("#id").html(value.regId);
-                chrome.storage.local.set({'registered':true});
-                chrome.storage.local.set({'mail':correo});
-                $("#botonReg").attr("disabled",true);
-            });
-        }
-    });
-    */
 }
 
 $(document).ready(function(){
@@ -132,6 +116,9 @@ $(document).ready(function(){
         
     });
 
+    /*
+    Funcion que se ejecuta cuando pulso el boton para enviar una peticion
+    */
     $("#botonDom").click(function(){
         dominio = $("#dominio").val();
         chrome.storage.local.get("mail",function(value){
