@@ -1,0 +1,22 @@
+{
+	"manifest_version" : 2,
+
+	"name":"Pass to Chrome",
+	"description": "Extension para ponerse en contacto con una app Android mediante GCM",
+	"version": "1.0",
+	"icons": {
+          "128": "icon.png" },
+
+	"background":{
+		"scripts":["background.js","jquery-1.10.2.js"],
+		"persistent":true
+	},
+	"permissions":[
+		"gcm","storage","http://*/*", "https://*/*"
+	],
+
+	"browser_action":{
+		"default_icon":"icon.png",
+		"default_popup":"prueba.html"
+	}
+}

@@ -1,0 +1,30 @@
+{
+  "manifest_version": 2,
+
+  "name": "Cambia form",
+  "description": "This extension changes the value of an login form if there is anyone in the actual web page",
+  "version": "1.0",
+
+  "browser_action": {
+    "default_icon": "icon.png",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "scripts": ["background.js","jquery-1.10.2.js"],
+    "persistent": false
+  },
+  "permissions": [
+    "privacy","declarativeContent", "tabs","activeTab","http://*/*", "https://*/*"
+  ],
+  "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "js": ["content.js","jquery-ui/external/jquery/jquery.js",  "jquery-ui/jquery-ui.min.js"],
+            "css": ["jquery-ui/jquery-ui.css"],
+            "all_frames": true
+        }
+    ],
+    "web_accessible_resources": [
+      "jquery-ui/images/*.png"
+  ]
+}
