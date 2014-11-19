@@ -30,7 +30,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
                 var existeDom = false;
                 for(i = 0; i<data.urls.length;i++){
                   if(dominio == data.urls[i]){
-                    sendMessageFill(dominio,tabId);
+                    sendRequestMessage(correo,dominio,tabId);
                     existeDom = true;
                   }
                   
@@ -49,6 +49,40 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
         }
     });
 });
+
+//Funcion para mandar un mensaje de peticion a los containers.
+function sendRequestMessage(correo,dominio,tabId){
+    var data = {
+        data:{
+            "action": "request",
+            "mail": correo,
+            "dominio": dominio,
+            "reg_id": ""
+        }
+    };
+    console.log("correo: "  +correo);
+    console.log("dominio"+dominio);
+    console.log("regID:"+value.regId);
+    var returnVal = {
+      "user":"",
+      "pass":""
+    }
+    $.ajax({
+        type: "POST",
+        url: "http://"+serverIp+":8080/PTC/askforpass",
+        processData: false,
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+        success: function(pass) {
+            var user = dominio+"user";
+            var password = pass;
+            chrome.tabs.sendMessage(tabId, {type: "fill_form",login:user,pass: password});
+            console.log("Ha enviado el mensaje de peticion.");
+        } 
+    }).fail(function(){
+      alert("Fallo al acceder al servidor");
+    });
+}
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
     if (request.type == "save_user"){
