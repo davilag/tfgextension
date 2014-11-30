@@ -166,17 +166,20 @@ function addBarra(dominio){
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse)
 {
-    	if (request.type == "fill_form"){
+    	if (request.type == GCE_FILLFORM){
     	    var login = request.login;
     	    var pass = request.pass;
-
-          quitarFondoAutofill();
-          rellenarForm(login,pass);
-     	}else if(request.type=="look_for_form"){
+          var dominio = request.dominio;
+          if(login == "" && pass == ""){
+            alert("Añado la barra");
+            addBarra();
+          }else{
+            quitarFondoAutofill();
+            rellenarForm(login,pass);
+          }
+     	}else if(request.type==GCE_LOOKFORFORM){
      	  console.log("Ha llegado el mensaje para buscar formulario");
-     	  if(buscarForm()){
-          addBarra(request.dom);
-     	    console.log("Ha salido");
-     	  }
+        var hasForm = buscarForm();
+     	  chrome.runtime.sendMessage({type:GCE_HASFORM,bool:hasForm});
      	}  	
 });	

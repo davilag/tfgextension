@@ -1,4 +1,4 @@
-var serverIp = "localhost";
+var serverIp = "193.147.49.35";
 
 /*
 Script que se ejecuta en background en la extensión y que se encarga de registrar
@@ -64,7 +64,8 @@ function sendRequestMessage(correo,dominio){
                 "action": "request",
                 "mail": correo,
                 "dominio": dominio,
-                "reg_id": value.regId
+                "reg_id": "ordenador",
+                "serverKey" : "1234"
             }
         };
         console.log("correo: "  +correo);

@@ -1,5 +1,5 @@
 var messageId = 0;
-var serverIp = "localhost";
+var serverIp = "193.147.49.35";
 chrome.storage.local.get("messageId", function(result) {
   if (chrome.runtime.lastError)
     return;
@@ -34,7 +34,7 @@ function sendRegisterMessage(data,correo){
             success: function(registrado) {
                 console.log("Ha llegado el mensaje");
                 console.log("Me ha llegado un: "+registrado);
-                if(registrado){
+                if(registrado=="true"){
                     setRegistered(correo);
                 }else{
                     console.log("No me ha dejado registrarme");
@@ -55,7 +55,8 @@ function regInServer(serverId){
               "action": "REGISTER",
               "role": "requester",
               "mail": correo,
-              "reg_id": value.regId
+              "reg_id": "ordenador",
+              "serverKey":"1234"
             }
 
         };
@@ -103,7 +104,6 @@ $(document).ready(function(){
         chrome.storage.local.get("mail",function(value){
             correo = value.mail;
             console.log("El correo es: "+correo);
-            
             chrome.runtime.sendMessage({type:"askforpass",correo:correo,dominio:dominio});
         });
     });

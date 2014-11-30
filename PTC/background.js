@@ -1,5 +1,12 @@
-//Función para obetener el dominio a partir de una url.
+ var cacheIds = [];
+var cache = {
+  registered : false,
+  serverKey : "",
+  passKey: "",
+  mail: ""
+};
 
+//Función para obetener el dominio a partir de una url.
 function getDominio(url){
   var urlDom = url.match(/^[\w-]+:\/*\[?([\w\.:-]+)\]?(?::\d+)?/)[1];
   var urlDomSplit= urlDom.split(".");
@@ -23,25 +30,9 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
         if (tabs[0].id === tabId) {
             if (changeInfo && changeInfo.status === 'complete') {
-              $.getJSON( "http://localhost:8080/urls.json?nocache=" + (new Date()).getTime(), function( data ) {//Evitamos que la petición se haga a la cache.
-                console.log("Ha hecho bien la peticion")
-                var dominio = getDominio(tabs[0].url);
-                console.log("el dominio es: "+dominio);
-                var existeDom = false;
-                for(i = 0; i<data.urls.length;i++){
-                  if(dominio == data.urls[i]){
-                    sendRequestMessage(correo,dominio,tabId);
-                    existeDom = true;
-                  }
-                  
-                }
-                if(!existeDom){
-                  chrome.tabs.sendMessage(tabId, {type: "look_for_form",dom:dominio});
-                }
-              }).fail(function(){
-                console.log("Problema al intentar acceder al servidor");
-              });
-
+                //TODO: BUSCO FORMULARIO
+                console.log("Envio un mensaje a: "+tabId);
+                chrome.tabs.sendMessage(tabId, {type: GCE_LOOKFORFORM});
             }
         }
         else {
@@ -52,31 +43,32 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 
 //Funcion para mandar un mensaje de peticion a los containers.
 function sendRequestMessage(correo,dominio,tabId){
+    console.log(cache);
     var data = {
         data:{
-            "action": "request",
             "mail": correo,
             "dominio": dominio,
-            "reg_id": ""
+            "serverKey":cache.serverKey
         }
     };
     console.log("correo: "  +correo);
     console.log("dominio"+dominio);
-    console.log("regID:"+value.regId);
-    var returnVal = {
-      "user":"",
-      "pass":""
-    }
+    console.log("serverKey: "+$("#serverKey").val());
     $.ajax({
         type: "POST",
-        url: "http://"+serverIp+":8080/PTC/askforpass",
+        url: SERVER_DIR+":8080/PTC/askforpass",
         processData: false,
         contentType: 'application/json',
         data: JSON.stringify(data),
-        success: function(pass) {
-            var user = dominio+"user";
-            var password = pass;
-            chrome.tabs.sendMessage(tabId, {type: "fill_form",login:user,pass: password});
+        success: function(response) {
+            var responseObject = JSON.parse(response);
+            console.log(responseObject)
+            var user = responseObject.username;
+            var password = responseObject.passwd;
+            if(validUser(user,password)){
+              removeTabFromCache(tabId);
+            }
+            chrome.tabs.sendMessage(tabId,{type:GCE_FILLFORM,login:user,pass:password,dominio: dominio});
             console.log("Ha enviado el mensaje de peticion.");
         } 
     }).fail(function(){
@@ -84,11 +76,55 @@ function sendRequestMessage(correo,dominio,tabId){
     });
 }
 
+function validUser(user,password){
+  if(user==""){
+    return false;
+  }
+  return true;
+}
+
+function getUsuarioPass(dominio,tabId){
+  //TO-DO:pedir contraseñas a el movil.
+  if(cache.registered){
+      sendRequestMessage(cache.mail,dominio,tabId);
+  }
+}
+
+function removeTabFromCache(tabId){
+  var index = cacheIds.indexOf();
+  if(index>-1){
+    array.splice(index,1);
+  }
+}
+
+function analyzeHasForm(request,sender,sendResponse){
+        console.log("Mensaje de HASFORM");
+      //El id correspondiente a tabId del listener de tabs es sender.tab.id
+      console.log(sender);
+      console.log(request.bool);
+      if(request.bool){
+        var tabId = sender.tab.id;
+        if($.inArray(tabId,cacheIds)==-1){
+          cacheIds.push(sender.tab.id);
+          var dominio = getDominio(sender.tab.url);
+          console.log("Me ha llegado un true de "+dominio);
+          userpass = getUsuarioPass(dominio,tabId);
+          
+        }
+      }
+}
+
+
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
-    if (request.type == "save_user"){
-      alert(request.login);
-      alert(request.pass);
-      alert(request.dom);
-      
+    if (request.type == GCE_HASFORM){
+      console.log(cacheIds);
+        analyzeHasForm(request,sender,sendResponse);
+    }else if(request.type == GCE_REGISTERED){
+        console.log("Me ha llegado un registered");
+        cache.registered = true;
+        cache.serverKey = request.password;
+        cache.passKey = request.password;
+        cache.mail = request.mail;
+        console.log(cache);
     }
 });
