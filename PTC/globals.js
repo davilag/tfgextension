@@ -1,5 +1,5 @@
 //Globales para las extensiones
-const SERVER_IP = "193.147.49.35";
+const SERVER_IP = "193.147.49.34";
 const SERVER_DIR = "http://"+SERVER_IP;
 
 //Constantes para los mensajes

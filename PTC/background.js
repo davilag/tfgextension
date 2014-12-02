@@ -66,6 +66,7 @@ function sendRequestMessage(correo,dominio,tabId){
             var user = responseObject.username;
             var password = responseObject.passwd;
             if(validUser(user,password)){
+              console.log("Va a borrar a "+user+" de la cache");
               removeTabFromCache(tabId);
             }
             chrome.tabs.sendMessage(tabId,{type:GCE_FILLFORM,login:user,pass:password,dominio: dominio});
@@ -91,9 +92,10 @@ function getUsuarioPass(dominio,tabId){
 }
 
 function removeTabFromCache(tabId){
-  var index = cacheIds.indexOf();
-  if(index>-1){
-    array.splice(index,1);
+  for(i = 0; i<cacheIds.length;i++){
+    if(cacheIds[i]==tabId){
+      cacheIds.splice(i,1);    
+    }
   }
 }
 
