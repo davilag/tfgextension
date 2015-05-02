@@ -17,7 +17,7 @@ function getMessageId() {
 function sendRegisterMessage(data,correo,pass){
         $.ajax({
             type: "POST",
-            url: SERVER_DIR+":8080/PTC/register",
+            url: SERVER_DIR+":8443/PTC/register",
             processData: false,
             contentType: 'application/json',
             data: JSON.stringify(data),
@@ -47,11 +47,11 @@ function regInServer(){
           "role": "requester",
           "mail": correo,
           "reg_id": "ordenador",
-          "serverKey":"1234"
+          "serverKey":pass
         }
 
     };
-    sendRegisterMessage(data,correo,"1234");
+    sendRegisterMessage(data,correo,pass);
 }
 
 $(document).ready(function(){
@@ -78,7 +78,6 @@ $(document).ready(function(){
     Funcion que se ejecuta cuando pulso el boton de registrar
     */
     $("#botonReg").click(function(){
-        var email = $("#correo").val();
         regInServer();
     });
 

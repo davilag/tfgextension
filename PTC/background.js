@@ -1,4 +1,4 @@
- var cacheIds = [];
+ var cacheIds = [[]];
 var cache = {
   registered : false,
   serverKey : "",
@@ -44,6 +44,9 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 //Funcion para mandar un mensaje de peticion a los containers.
 function sendRequestMessage(correo,dominio,tabId){
     console.log(cache);
+    key = "MTIzNDU2Nzg5MDk4NzY1NA==";
+    iv = "NzYzNDI1MTA5ODQ2MzgyNQ==";
+    aad = "0";
     var data = {
         data:{
             "mail": correo,
@@ -56,7 +59,7 @@ function sendRequestMessage(correo,dominio,tabId){
     console.log("serverKey: "+$("#serverKey").val());
     $.ajax({
         type: "POST",
-        url: SERVER_DIR+":8080/PTC/askforpass",
+        url: SERVER_DIR+":8443/PTC/askforpass",
         processData: false,
         contentType: 'application/json',
         data: JSON.stringify(data),
@@ -65,19 +68,24 @@ function sendRequestMessage(correo,dominio,tabId){
             console.log(responseObject)
             var user = responseObject.username;
             var password = responseObject.passwd;
-            if(validUser(user,password)){
-              console.log("Va a borrar a "+user+" de la cache");
-              removeTabFromCache(tabId);
+            if(validUser(user)){
+              //removeTabFromCache(tabId,dominio);
+              chrome.tabs.sendMessage(tabId,{type:GCE_FILLFORM,login:user,pass:password,dominio: dominio});
+              console.log("Ha enviado el mensaje de peticion.");
+            }else{
+              alert("No es un usuario bueno.")
+              alert("La contraseña es: "+password);
+              if(password=="noPassword"){
+                chrome.tabs.sendMessage(tabId,{type:GCE_SHOW_BARRA,dom:dominio});
+              }
             }
-            chrome.tabs.sendMessage(tabId,{type:GCE_FILLFORM,login:user,pass:password,dominio: dominio});
-            console.log("Ha enviado el mensaje de peticion.");
-        } 
+        }
     }).fail(function(){
       alert("Fallo al acceder al servidor");
     });
 }
 
-function validUser(user,password){
+function validUser(user){
   if(user==""){
     return false;
   }
@@ -91,14 +99,28 @@ function getUsuarioPass(dominio,tabId){
   }
 }
 
-function removeTabFromCache(tabId){
+function isInCache(tabId,dom){
+  console.log("La cache es: ");
+  console.log(cacheIds);
+  console.log("Voy a ver si esta: "+tabId+" "+dom);
   for(i = 0; i<cacheIds.length;i++){
-    if(cacheIds[i]==tabId){
-      cacheIds.splice(i,1);    
+    var tab = cacheIds[i][0];
+    var dominio = cacheIds[i][1];
+    console.log("La tab es: "+tab+" y el dominio es: "+dominio);
+    if(tab==tabId&&dominio==dom){
+      return true;
+    }
+  }
+  return false;
+}
+
+function removeTabCache(tabId){
+  for(i = 0; i<cacheIds.length; i++){
+    if(cacheIds[i][0]==tabId){
+      cacheIds.splice(i,1);
     }
   }
 }
-
 function analyzeHasForm(request,sender,sendResponse){
         console.log("Mensaje de HASFORM");
       //El id correspondiente a tabId del listener de tabs es sender.tab.id
@@ -106,16 +128,39 @@ function analyzeHasForm(request,sender,sendResponse){
       console.log(request.bool);
       if(request.bool){
         var tabId = sender.tab.id;
-        if($.inArray(tabId,cacheIds)==-1){
-          cacheIds.push(sender.tab.id);
-          var dominio = getDominio(sender.tab.url);
+        var dominio = getDominio(sender.tab.url);
+        if(!isInCache(tabId,dominio)){
+          cacheIds.push([tabId,dominio]);
+          console.log(cacheIds);
           console.log("Me ha llegado un true de "+dominio);
           userpass = getUsuarioPass(dominio,tabId);
-          
+
         }
       }
 }
-
+function savePass(dom,usuario,pass){
+  var data = {
+    data:{
+      "mail" : cache.mail,
+      "serverKey": cache.serverKey,
+      "usuario": usuario,
+      "password" : pass,
+      "dominio": dom
+    }
+  };
+  $.ajax({
+        type: "POST",
+        url: SERVER_DIR+":8443/PTC/addpass",
+        processData: false,
+        contentType: 'application/json',
+        data: JSON.stringify(data),
+        success: function(response) {
+            console.log("Me ha llegado a añadir: "+response);
+        }
+    }).fail(function(){
+      alert("Fallo al acceder al servidor");
+    });
+}
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
     if (request.type == GCE_HASFORM){
@@ -128,5 +173,14 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
         cache.passKey = request.password;
         cache.mail = request.mail;
         console.log(cache);
+    }else if(request.type==GCE_SAVE_PASS){
+      alert("Quiero guardar la contraseña");
+      savePass(request.dom,request.user,request.pass);
     }
+});
+
+chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
+    console.log("He cerrado la pestaña: "+tabId);
+    removeTabCache(tabId);
+    console.log(cacheIds);
 });

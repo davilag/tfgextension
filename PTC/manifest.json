@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
 
-  "name": "Cambia form",
+  "name": "Pass To Chrome",
   "description": "This extension changes the value of an login form if there is anyone in the actual web page",
   "version": "1.0",
 
@@ -10,7 +10,7 @@
     "default_popup": "popup.html"
   },
   "background": {
-    "scripts": ["background.js","jquery-1.10.2.js","globals.js"],
+    "scripts": ["background.js","jquery-1.10.2.js","globals.js","gcm.js","sjcl.js"],
     "persistent": true
   },
   "permissions": [

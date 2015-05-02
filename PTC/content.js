@@ -41,7 +41,7 @@ function buscarForm(){
   return hasForm;
 }
 function addUser(dominio){
-  chrome.runtime.sendMessage({type:"save_user",login:$("#dialog-extension-user").val(),pass:$("#dialog-extension-pass").val(),
+  chrome.runtime.sendMessage({type:GCE_SAVE_PASS,user:$("#dialog-extension-user").val(),pass:$("#dialog-extension-pass").val(),
   dom:dominio});
 }
 function setEstilo(mensaje, campos,labelUser,inputUser,labelPass,
@@ -118,7 +118,7 @@ function showDialog(dominio){
           addUser(dominio);
           caja.dialog("close");
         },
-        Cancel: function() {
+        "Cancelar": function() {
           caja.dialog( "close" );
         }
       },
@@ -150,7 +150,7 @@ function addBarra(dominio){
    barra.slideToggle("slow");
   });
   var pregunta = $("<span>");
-  pregunta.html("¿Quieres guardar esta pagina?");
+  pregunta.html("Pass To Chorme: ¿Quieres guardar esta pagina?");
   pregunta.appendTo(barra);
   pregunta.css("margin-right","0.5em");
   botonSi.appendTo(barra);
@@ -181,5 +181,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse)
      	  console.log("Ha llegado el mensaje para buscar formulario");
         var hasForm = buscarForm();
      	  chrome.runtime.sendMessage({type:GCE_HASFORM,bool:hasForm});
-     	}  	
+     	}else if(request.type == GCE_SHOW_BARRA){
+        addBarra(request.dom);
+      }  	
 });	

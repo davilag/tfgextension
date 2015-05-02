@@ -1,6 +1,6 @@
 //Globales para las extensiones
-const SERVER_IP = "193.147.49.34";
-const SERVER_DIR = "http://"+SERVER_IP;
+const SERVER_IP = "localhost";
+const SERVER_DIR = "https://"+SERVER_IP;
 
 //Constantes para los mensajes
 const MSG_ACTION="action";
@@ -20,6 +20,8 @@ const ACTION_REQUEST = "request";
 const ACTION_RESPONSE = "response";
 const ACTION_CLEARNOTIF = "clear_notification";
 const ACTION_GET_URLS = "get_urls";
+const ACTION_SAVE_PASS = "save_pass";
+const ACTION_ADD_PASS = "addpass";
 
 //Constantes para los mensajes entre background y content.
 const GCE_LOOKFORFORM = "look_for_form";
@@ -28,3 +30,5 @@ const GCE_FILLFORM = "fill_form";
 const GCE_HASFORM = "has_form";
 const GCE_REGISTER = "register";
 const GCE_REGISTERED = "registered";
+const GCE_SHOW_BARRA = "showbarra";
+const GCE_SAVE_PASS = "savePasswordGCE";
