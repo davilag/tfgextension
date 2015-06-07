@@ -12,14 +12,13 @@ function quitarFondoAutofill(){
 //Funcion para rellenar el formulario de login con el usuario y la contraseña.
 function rellenarForm (login, pass){
     var inputs = $("input").get().reverse();
-    var indice = undefined;
     var passfound = false;
 		$(inputs).each(function(index){
       		if($(this).attr("type")=="password"){
           		$(this).val(pass);
 	            $(this).css("background-color","#A2D6E4");
           		passfound = true;
-      		}else if($(this).attr("type")=="text" || $(this).attr("type")=="email" || $(this).attr("type")==undefined){
+      		}else if($(this).attr("type")=="text" || $(this).attr("type")=="email" || $(this).attr("type")===undefined){
   			      if(passfound){
               		passfound = false;
 		              $(this).css("background-color","#A2D6E4");
@@ -63,6 +62,7 @@ function setEstilo(mensaje, campos,labelUser,inputUser,labelPass,
       mensaje.css("padding","0.3em");
       
     }
+    
 //Funcion para mostrar el diálogo para guardar un usuario.
 function showDialog(dominio){
 
@@ -159,7 +159,13 @@ function addBarra(dominio){
   barra.slideToggle("slow");
   barra.css("z-index","4000");
   barra.css("position","relative");
-  $("body").prepend(barra);
+  var appended = false;
+  $("body").each(function(){
+    if(!appended){
+      $(this).prepend(barra);
+      appended = true;
+    }
+  });
 
   return barra;
 }
@@ -170,7 +176,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse)
     	    var login = request.login;
     	    var pass = request.pass;
           var dominio = request.dominio;
-          if(login == "" && pass == ""){
+          if(login === "" && pass === ""){
             alert("Añado la barra");
             addBarra();
           }else{
@@ -184,4 +190,4 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse)
      	}else if(request.type == GCE_SHOW_BARRA){
         addBarra(request.dom);
       }  	
-});	
+});

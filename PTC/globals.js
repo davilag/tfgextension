@@ -1,6 +1,6 @@
 //Globales para las extensiones
 const SERVER_IP = "localhost";
-const SERVER_DIR = "https://"+SERVER_IP;
+const SERVER_DIR = "http://"+SERVER_IP;
 
 //Constantes para los mensajes
 const MSG_ACTION="action";
@@ -11,6 +11,7 @@ const MSG_PASSWD = "password";
 const MSG_REQ_ID = "req_id";
 const MSG_SERVER_KEY="serverKey";
 const MSG_USER = "usuario";
+const MSG_STATE = "estado";
 
 //Acciones de los mensajes de GCM
 const ACTION_REGISTER = "REGISTER";
@@ -32,3 +33,8 @@ const GCE_REGISTER = "register";
 const GCE_REGISTERED = "registered";
 const GCE_SHOW_BARRA = "showbarra";
 const GCE_SAVE_PASS = "savePasswordGCE";
+
+
+//Estado de los mensaje de respuesta
+const MSG_STATE_OK = "OK";
+const MSG_STATE_NO_PASSWD ="noPass";

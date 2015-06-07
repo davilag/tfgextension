@@ -1,7 +1,7 @@
 var messageId = 0;
 var registered = false;
 
-
+chrome.browserAction.setBadgeText({text: ""});
 // Sets up an event listener for send error.
 //chrome.gcm.onSendError.addListener(sendError);
 function setRegistered(correo){
@@ -15,24 +15,8 @@ function getMessageId() {
   return messageId.toString();
 }
 function sendRegisterMessage(data,correo,pass){
-        $.ajax({
-            type: "POST",
-            url: SERVER_DIR+":8443/PTC/register",
-            processData: false,
-            contentType: 'application/json',
-            data: JSON.stringify(data),
-            success: function(registrado) {
-                console.log("Ha llegado el mensaje");
-                console.log("Me ha llegado un: "+registrado);
-                if(registrado=="true"){
-                    setRegistered(correo);
-                    chrome.runtime.sendMessage({type:GCE_REGISTERED,password:pass,mail:correo});
-                }else{
-                    console.log("No me ha dejado registrarme");
-                }
-                
-            }
-        });
+  setRegistered(correo);
+  chrome.runtime.sendMessage({type:GCE_REGISTERED,password:pass,mail:correo});
 }
 
 

@@ -3,7 +3,8 @@ function GCM_encrypt(key,iv,input,aad){
   var ivBits = sjcl.codec.base64.toBits(iv);
   var aadBits = sjcl.codec.utf8String.toBits(aad);
   var inputBits = sjcl.codec.utf8String.toBits(input);
-
+  console.log("El input es: "+sjcl.codec.base64.fromBits(inputBits));
+  console.log("El aad es: "+sjcl.codec.base64.fromBits(aadBits));
   var prp = new sjcl.cipher.aes(keyBits);
   return sjcl.codec.base64.fromBits(sjcl.mode.gcm.encrypt(prp, inputBits,ivBits,aadBits));
 }

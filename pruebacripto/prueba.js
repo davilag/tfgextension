@@ -1,7 +1,7 @@
-var key = "MTIzNDU2Nzg5MDk4NzY1NA==";
-var iv = "NzYzNDI1MTA5ODQ2MzgyNQ==";
-var aad = "12457423556432ghd";
-var ptext = "Hola esto es una prueba";
+var key = "ZV54ZnTZ0+d7wF7R3je0tg==";
+var iv = "emFKaDJtVUh0YWUzdDFsdg==";
+var aad = "d.avilag23@gmail.com";
+var ptext = '{"dominio":"twitter","nonce":72825886,"ts":1431191892448}';
 
 var pass = "prueba";
 

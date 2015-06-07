@@ -1,21 +1,32 @@
- var cacheIds = [[]];
+var cacheIds = [[]];
 var cache = {
   registered : false,
   serverKey : "",
   passKey: "",
   mail: ""
 };
+var tsCache = [];
 
 //Función para obetener el dominio a partir de una url.
 function getDominio(url){
   var urlDom = url.match(/^[\w-]+:\/*\[?([\w\.:-]+)\]?(?::\d+)?/)[1];
   var urlDomSplit= urlDom.split(".");
-  var dominio = urlDomSplit[urlDomSplit.length-2]+"."+urlDomSplit[urlDomSplit.length-1];
+  var dominio = urlDomSplit[urlDomSplit.length-2];
   return dominio;
 }
 
+
+function isInTsCache(ts){
+  for(var i = 0; i< tsCache.length; i++){
+    if(ts == tsCache[i]){
+      return true;
+    }
+  }
+  return false;
+}
 function sendMessageFill(dominio,tabId){
-  $.getJSON( "http://localhost:8080/"+dominio+".json?nocache=" + (new Date()).getTime(), function( data ) { //Evitamos que la petición se haga a la cache.
+  $.getJSON( "http://localhost:8080/"+dominio+".json?nocache=" + (new Date()).getTime(), function( data ) { 
+    //Evitamos que la petición se haga a la cache.
     var log =data.login;
     var password = data.pass;
     chrome.tabs.sendMessage(tabId, {type: "fill_form",login:log,pass: password});
@@ -44,49 +55,75 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 //Funcion para mandar un mensaje de peticion a los containers.
 function sendRequestMessage(correo,dominio,tabId){
     console.log(cache);
-    key = "MTIzNDU2Nzg5MDk4NzY1NA==";
-    iv = "NzYzNDI1MTA5ODQ2MzgyNQ==";
-    aad = "0";
-    var data = {
-        data:{
-            "mail": correo,
-            "dominio": dominio,
-            "serverKey":cache.serverKey
-        }
+    var iv = getIV();
+    var nonce = getNonce();
+    var ts = getTimestamp();
+    var secret = {
+      dominio : dominio,
+      nonce : nonce,
+      ts : ts
     };
-    console.log("correo: "  +correo);
-    console.log("dominio"+dominio);
-    console.log("serverKey: "+$("#serverKey").val());
+    var secretString = JSON.stringify(secret);
+    console.log(secretString);
+    var secretCif = GCM_encrypt(cache.serverKey,iv,secretString,correo);
+    var data = {
+      iv : iv,
+      aad : correo,
+      payload : secretCif
+    };
+    console.log("Estos son los datos que voy a enviar: ");
+    console.log(data);
+    console.log(JSON.stringify(data));
     $.ajax({
         type: "POST",
-        url: SERVER_DIR+":8443/PTC/askforpass",
+        url: SERVER_DIR+":8080/PTC/askforpass",
         processData: false,
         contentType: 'application/json',
         data: JSON.stringify(data),
         success: function(response) {
-            var responseObject = JSON.parse(response);
-            console.log(responseObject)
-            var user = responseObject.username;
-            var password = responseObject.passwd;
-            if(validUser(user)){
-              //removeTabFromCache(tabId,dominio);
-              chrome.tabs.sendMessage(tabId,{type:GCE_FILLFORM,login:user,pass:password,dominio: dominio});
+          console.log("La respuesta es:");
+          console.log(response);
+          if(response!="false"){
+            responseObj = JSON.parse(response).data;
+            var ivRes = responseObj.iv;
+            var payloadCif = responseObj.payload;
+            var payload = GCM_decrypt(cache.serverKey,ivRes,payloadCif,cache.mail);
+            console.log("El payload es:");
+            console.log(payload);
+            var payloadObj = JSON.parse(payload).data;
+            if(payloadObj.nonce - nonce == 1){
+              if(!isInTsCache(payloadObj.ts)){
+                tsCache.push(payloadObj.ts);
+                var userPassCif = payloadObj.payload;
+                if(payloadObj.estado ==MSG_STATE_OK){
+                  var userPass = GCM_decrypt(cache.passKey,payloadObj.iv,userPassCif,cache.mail);
+                  var userPassObj = JSON.parse(userPass);
+                  chrome.tabs.sendMessage(tabId,{type:GCE_FILLFORM,login:userPassObj.user,pass:userPassObj.password,dominio: dominio});
+                }else{
+                  if(payloadObj.estado==MSG_STATE_NO_PASSWD){
+                    chrome.tabs.sendMessage(tabId,{type:GCE_SHOW_BARRA,dom:dominio});
+                    console.log("He enviado la peticion para mostrar la barra.");
+                  }
+                }
               console.log("Ha enviado el mensaje de peticion.");
-            }else{
-              alert("No es un usuario bueno.")
-              alert("La contraseña es: "+password);
-              if(password=="noPassword"){
-                chrome.tabs.sendMessage(tabId,{type:GCE_SHOW_BARRA,dom:dominio});
+              }else{
+                console.log("Fallo por ts");
               }
+            }else{
+              console.log("Fallo en el nonce");
             }
+          }else{
+            cache.registered = false;
+            console.log("Fallo en la respuesta");
+          }
         }
     }).fail(function(){
-      alert("Fallo al acceder al servidor");
+      chrome.browserAction.setBadgeText({text: "X"});
     });
 }
 
 function validUser(user){
-  if(user==""){
+  if(user===""){
     return false;
   }
   return true;
@@ -94,7 +131,10 @@ function validUser(user){
 
 function getUsuarioPass(dominio,tabId){
   //TO-DO:pedir contraseñas a el movil.
+  console.log("Funcion getUsuarioPass:");
+  console.log(cache);
   if(cache.registered){
+      console.log("Estoy registrado");
       sendRequestMessage(cache.mail,dominio,tabId);
   }
 }
@@ -139,18 +179,41 @@ function analyzeHasForm(request,sender,sendResponse){
       }
 }
 function savePass(dom,usuario,pass){
-  var data = {
+  var serverKey = cache.serverKey;
+  var mail = cache.mail;
+  var payloadUserPass = {
+    user : usuario,
+    password : pass
+  };
+  var payloadUserPassPlain = JSON.stringify(payloadUserPass);
+  var ivPass = getIV();
+  var payloadUserPassCipher = GCM_encrypt(cache.passKey,ivPass,payloadUserPassPlain,mail);
+  var nonce = getNonce();
+  var ts = getTimestamp();
+  var payload = {
     data:{
-      "mail" : cache.mail,
-      "serverKey": cache.serverKey,
-      "usuario": usuario,
-      "password" : pass,
-      "dominio": dom
+      ts : ts,
+      nonce : nonce,
+      iv : ivPass,
+      dominio: dom,
+      payload : payloadUserPassCipher,
+      usuario : usuario
     }
   };
+  var payloadPlain = JSON.stringify(payload);
+  console.log("El payload plano es:");
+  console.log(payloadPlain);
+  var iv = getIV();
+  var payloadCipher = GCM_encrypt(serverKey,iv,payloadPlain,mail);
+  var data = {
+    iv : iv,
+    aad: mail,
+    payload : payloadCipher
+  };
+  console.log("Voy a enviar el mensaje al servidor para guardar la contraseña");
   $.ajax({
         type: "POST",
-        url: SERVER_DIR+":8443/PTC/addpass",
+        url: SERVER_DIR+":8080/PTC/addpass",
         processData: false,
         contentType: 'application/json',
         data: JSON.stringify(data),
@@ -158,7 +221,7 @@ function savePass(dom,usuario,pass){
             console.log("Me ha llegado a añadir: "+response);
         }
     }).fail(function(){
-      alert("Fallo al acceder al servidor");
+      chrome.browserAction.setBadgeText({text: "X"});
     });
 }
 
@@ -169,12 +232,15 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
     }else if(request.type == GCE_REGISTERED){
         console.log("Me ha llegado un registered");
         cache.registered = true;
-        cache.serverKey = request.password;
-        cache.passKey = request.password;
+        keys = getKeys(request.password);
+        cache.serverKey = keys.ks;
+        cache.passKey = keys.kp;
         cache.mail = request.mail;
+        chrome.browserAction.setIcon({
+            path: "iconLogin.png"
+        });
         console.log(cache);
     }else if(request.type==GCE_SAVE_PASS){
-      alert("Quiero guardar la contraseña");
       savePass(request.dom,request.user,request.pass);
     }
 });
