@@ -7,6 +7,11 @@ var cache = {
 };
 var tsCache = [];
 
+function validTS(ts){
+  var now = new Date().getTime();
+  return now - ts < (2*60*1000);
+}
+
 //Función para obetener el dominio a partir de una url.
 function getDominio(url){
   var urlDom = url.match(/^[\w-]+:\/*\[?([\w\.:-]+)\]?(?::\d+)?/)[1];
@@ -92,7 +97,7 @@ function sendRequestMessage(correo,dominio,tabId){
             console.log(payload);
             var payloadObj = JSON.parse(payload).data;
             if(payloadObj.nonce - nonce == 1){
-              if(!isInTsCache(payloadObj.ts)){
+              if(!isInTsCache(payloadObj.ts) && validTS(payloadObj.ts)){
                 tsCache.push(payloadObj.ts);
                 var userPassCif = payloadObj.payload;
                 if(payloadObj.estado ==MSG_STATE_OK){
@@ -117,8 +122,19 @@ function sendRequestMessage(correo,dominio,tabId){
             console.log("Fallo en la respuesta");
           }
         }
-    }).fail(function(){
-      chrome.browserAction.setBadgeText({text: "X"});
+    }).fail(function(xhr){
+      console.log(xhr);
+      var error = "";
+      if(xhr.status == 500){
+        error = ERR_AUTH_FAIL;
+      }else {
+        error = ERR_SERVER_DOWN;
+      }
+      chrome.storage.local.set({'error': error}, function() {
+          // Notify that we saved.
+          chrome.browserAction.setBadgeText({text: "X"});
+      });
+      
     });
 }
 
@@ -178,7 +194,7 @@ function analyzeHasForm(request,sender,sendResponse){
         }
       }
 }
-function savePass(dom,usuario,pass){
+function savePass(dom,usuario,pass,tabId){
   var serverKey = cache.serverKey;
   var mail = cache.mail;
   var payloadUserPass = {
@@ -219,6 +235,23 @@ function savePass(dom,usuario,pass){
         data: JSON.stringify(data),
         success: function(response) {
             console.log("Me ha llegado a añadir: "+response);
+            if(response!="false"){
+              responseObj = JSON.parse(response).data;
+              var ivRes = responseObj.iv;
+              var payloadCif = responseObj.payload;
+              var payload = GCM_decrypt(cache.serverKey,ivRes,payloadCif,cache.mail);
+              console.log("El payload es:");
+              console.log(payload);
+              var payloadObj = JSON.parse(payload).data;
+              if(payloadObj.nonce - nonce == 1){
+                if(!isInTsCache(payloadObj.ts) && validTS(payloadObj.ts)){
+                  tsCache.push(payloadObj.ts);
+                  if(payloadObj.estado==MSG_STATE_OK){
+                    chrome.tabs.sendMessage(tabId,{type:GCE_FILLFORM,login:usuario,pass:pass,dominio: dom});
+                  }
+                }
+              }
+            }
         }
     }).fail(function(){
       chrome.browserAction.setBadgeText({text: "X"});
@@ -241,7 +274,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
         });
         console.log(cache);
     }else if(request.type==GCE_SAVE_PASS){
-      savePass(request.dom,request.user,request.pass);
+      savePass(request.dom,request.user,request.pass,sender.tab.id);
     }
 });
 

@@ -8,20 +8,33 @@
     <meta name="author" content="">
     <link rel="icon" href="../../favicon.ico">
 
-    <title>Prueba GCM</title>
-
+    <title>Pass To Chrome</title>
+    
+    <link rel="stylesheet" type="text/css" href="bootstrap-theme.min.css">
+    <link rel="stylesheet" type="text/css" href="bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="popup.css">
 
 
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     
     <script type="text/javascript" src="jquery-1.10.2.js"></script>
+    <script type="text/javascript" src="bootstrap.min.js"></script>
     <script src="popup.js"></script>
     <script src="globals.js"></script>
   </head>
 
   <body>
-    <span><input type="text" id = "correo"></span>
-    <span><input type="password" id = "pass"></span>
-    <span><button id = "botonReg">Registrarse</button></span>
+    <div class="input-group input-group-sm">
+      <span class="input-group-addon" id="sizing-addon3">@</span>
+      <input type="text" class="form-control" placeholder="Usuario" aria-describedby="sizing-addon3" id = "correo">
+    </div>
+        <div class="input-group input-group-sm">
+      <span class="input-group-addon" id="sizing-addon3">*</span>
+      <input type="password" class="form-control" placeholder="Contraseña" aria-describedby="sizing-addon3" id = "pass">
+    </div>
+    <div id="contbut"><button class="btn btn-default" type="submit" id = "botonReg">Registrarse</button></div>
+    <div class="alert alert-danger" role="alert">
+      <p id="error">No se ha podido conectar con el servidor</p>
+    </div>
   </body>
 </html>

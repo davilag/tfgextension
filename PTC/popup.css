@@ -1,0 +1,21 @@
+body{
+	width: 300px;
+	background-color: #FEBA82;
+}
+
+div{
+	margin: 2em;
+}
+
+#error,#botonReg,#correo,#pass{
+	font-size: 80%;
+}
+
+#contbut{
+	width: 100%;
+}
+#botonReg{
+	float: center;
+	width: 12em;
+	margin-left: 17%;
+}

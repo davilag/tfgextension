@@ -37,8 +37,22 @@ function regInServer(){
     };
     sendRegisterMessage(data,correo,pass);
 }
-
+function mostrarError(mensajeError){
+  $("#error").html(mensajeError);
+  $(".alert").show();
+}
 $(document).ready(function(){
+    $(".alert").hide();
+
+    chrome.storage.local.get('error', function(data) {
+          // Notify that we saved.
+          if(data.error!=undefined){
+            mostrarError(data.error);
+            chrome.storage.local.clear();
+          }
+          console.log(data);
+
+    });
     var registrado = false;
     var server = "";
     chrome.storage.local.get("regId",function(value){

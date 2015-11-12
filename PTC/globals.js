@@ -38,3 +38,8 @@ const GCE_SAVE_PASS = "savePasswordGCE";
 //Estado de los mensaje de respuesta
 const MSG_STATE_OK = "OK";
 const MSG_STATE_NO_PASSWD ="noPass";
+
+//Mensajes de error.
+
+const ERR_AUTH_FAIL = "Error en la autenticación";
+const ERR_SERVER_DOWN = "No se ha podido conectar con el servidor";

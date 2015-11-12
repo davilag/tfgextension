@@ -191,3 +191,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse)
         addBarra(request.dom);
       }  	
 });
+
+document.addEventListener("DOMContentLoaded", function(event) { 
+  alert("Ready");
+});
